@@ -1,6 +1,6 @@
-# ⚕️ Automatización de Gestión de Clientes e Información Administrativa #
+# ⚛️ Automatización de Gestión de Clientes e Información Administrativa ⚛️ #
 
-🗃️ Este repositorio contiene un script Python diseñado para automatizar y agilizar el proceso de carga de información en un portal web de gestión de clientes. Orientado a optimizar la eficiencia en tareas administrativas recurrentes, el programa permite tramitar recetas de múltiples pacientes de forma secuencial y robusta.
+🗃️ Este repositorio contiene un script Python diseñado para automatizar y agilizar el proceso de carga de información en un portal web de gestión de clientes. Orientado a optimizar la eficiencia en tareas administrativas recurrentes, el programa permite tramitar información precisa de múltiples clientes de forma secuencial y robusta.
 
 💻 Desarrollado para un rol administrativo, este software es un "asistente digital" para la gestión de clientes, liberando tiempo valioso y reduciendo la carga de trabajo manual.
 

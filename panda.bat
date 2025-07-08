@@ -1,6 +1,6 @@
 @echo off
 REM Cambia al directorio donde se encuentra este script
-cd /d "D:\PROGRAMAS\PANDA"
+cd /d "C:\Users\Manu\Desktop\PANDA"
 
 REM Ejecuta el script de Python.
 REM Asegúrate de que 'python' esté en tu PATH o usa la ruta completa a python.exe
