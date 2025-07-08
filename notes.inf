@@ -1,0 +1,24 @@
+Notas de Versión PANDA v1.0.1 - [Fecha de Hoy: 2025-06-05]
+
+Mejoras de Eficiencia y Robustez en el Script de Automatización PAMI:
+
+1.  **Optimización en la Carga de Datos del Beneficiario (`ingresar_beneficiario`):**
+    * Se eliminó la pausa fija (`time.sleep(2)`) después de ingresar el número de beneficio y presionar TAB.
+    * Se implementó una espera explícita (`WebDriverWait`) que aguarda dinámicamente hasta que:
+        * El campo de nombre y apellido del paciente (`t_apenom`) contenga datos (no esté vacío).
+        * El botón para seleccionar recetas modelo (`btnModelo`) esté visible en la página.
+    * Esto resulta en un proceso más rápido si los datos cargan antes de los 2 segundos y más robusto si tardan un poco más (hasta el límite del `WebDriverWait`). Se incluye manejo de `TimeoutException` con captura de pantalla si la espera excede el tiempo límite.
+
+2.  **Optimización en la Selección de Receta Modelo (`seleccionar_receta_modelo`):**
+    * Se eliminó la pausa fija (`time.sleep(1)`) que ocurría después de hacer clic en una receta modelo dentro del iframe.
+    * Ahora, después del clic, el script:
+        * Cambia explícitamente el contexto del WebDriver al contenido principal de la página (`driver.switch_to.default_content()`).
+        * Implementa una espera explícita (`WebDriverWait`) que aguarda hasta que el primer campo de droga en la página principal (`t_droga_1`) se vuelva visible. Esto confirma que la página principal ha procesado la selección del modelo.
+    * Esta modificación asegura que el script avance tan pronto como la página esté realmente lista, mejorando la eficiencia. Se mantiene el bloque `finally` para asegurar el cambio a `default_content` y se han reforzado los bloques `except` dentro de la función.
+
+3.  **Mejora en el Manejo de Errores por Paciente (Bucle Principal):**
+    * En el bloque `except` general que maneja errores durante el procesamiento de un paciente individual, se añadió un intento de recuperación.
+    * Si ocurre un error inesperado con un paciente, el script ahora intentará recargar la página base de carga de recetas (`https://recetaelectronica.pami.org.ar/PortalWeb`) antes de continuar con el siguiente paciente.
+    * Si esta recarga falla, el script se detendrá para evitar problemas mayores, pero si tiene éxito, permite una mayor resiliencia para completar el procesamiento de los demás pacientes de la lista.
+
+Estos cambios apuntan a reducir los tiempos muertos del script y a mejorar su capacidad de respuesta frente a las variaciones en los tiempos de carga de la aplicación web PAMI.

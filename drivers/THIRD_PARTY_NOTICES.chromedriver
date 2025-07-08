@@ -1,0 +1,163 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
+import time
+
+# --- Configuración del ChromeDriver ---
+ruta_del_archivo_chromedriver = "C:/Users/Manu/Downloads/automatizador_pami/chromedriver.exe"
+
+print(f"Usando ChromeDriver desde: {ruta_del_archivo_chromedriver}")
+service = Service(executable_path=ruta_del_archivo_chromedriver)
+driver = webdriver.Chrome(service=service)
+
+# --- Credenciales e URLs ---
+url_de_login_pami = "https://cup.pami.org.ar/controllers/loginController.php?redirect=https://recetaelectronica.pami.org.ar"
+usuario_pami = "UP27233985452N1"
+contrasena_pami = "Loli2020"
+numero_beneficio_ejemplo = "15023732210400"
+
+try:
+    # --- PASO DE LOGIN ---
+    print(f"Abriendo la página de login de PAMI: {url_de_login_pami}")
+    driver.get(url_de_login_pami)
+    driver.maximize_window()
+
+    print("Esperando el campo de usuario (selector='usua_logeo')...")
+    campo_usuario_login = WebDriverWait(driver, 20).until(
+        EC.visibility_of_element_located((By.ID, "usua_logeo"))
+    )
+    campo_usuario_login.send_keys(usuario_pami)
+    print("Usuario ingresado. Esperando 1 segundo...")
+    time.sleep(1)
+
+    print("Esperando el campo de contraseña (selector='password')...")
+    campo_contrasena_login = WebDriverWait(driver, 10).until(
+        EC.visibility_of_element_located((By.ID, "password"))
+    )
+    campo_contrasena_login.send_keys(contrasena_pami)
+    print("Contraseña ingresada. Esperando 1 segundo...")
+    time.sleep(1)
+
+    print("Presionando ENTER para iniciar sesión...")
+    campo_contrasena_login.send_keys(Keys.ENTER)
+
+    print("Login enviado. Esperando a que cargue la página de recetas (buscando campo con id='t_benef')...")
+    campo_nro_beneficio = WebDriverWait(driver, 30).until(
+        EC.visibility_of_element_located((By.ID, "t_benef"))
+    )
+    print("Página de carga de recetas detectada (campo 'N° Beneficio *' encontrado).")
+
+    # --- CARGA DE RECETAS ---
+    print(f"Ingresando número de beneficio: {numero_beneficio_ejemplo}")
+    campo_nro_beneficio.clear()
+    campo_nro_beneficio.send_keys(numero_beneficio_ejemplo)
+
+    print("Presionando la tecla TAB...")
+    campo_nro_beneficio.send_keys(Keys.TAB)
+
+    print("TAB presionado. Esperando 2 segundos para que se carguen los datos del paciente...")
+    time.sleep(2)
+    print("Pausa completada. Asumiendo que los datos del paciente están cargados.")
+
+    print("Esperando el botón de 'Recetas Modelo' (id='btnModelo')...")
+    boton_recetas_modelo = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.ID, "btnModelo"))
+    )
+    print("Botón de 'Recetas Modelo' encontrado. Haciendo clic...")
+    boton_recetas_modelo.click()
+    print("Botón de 'Recetas Modelo' clickeado.")
+
+    selector_css_iframe = "iframe[src*='recetaModeloController.php']"
+    print(f"Esperando el iframe de recetas modelo con CSS Selector: {selector_css_iframe}...")
+    WebDriverWait(driver, 20).until(
+        EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR, selector_css_iframe))
+    )
+    print("Cambiado al contexto del iframe.")
+
+    try:
+        xpath_primera_receta = "//tr[@class='rowModelo' and @data-pos='0']"
+        print(f"Dentro del iframe: Esperando la primera receta modelo con XPath: {xpath_primera_receta}...")
+        primera_receta_modelo_clickable = WebDriverWait(driver, 20).until(
+            EC.element_to_be_clickable((By.XPATH, xpath_primera_receta))
+        )
+        print("Dentro del iframe: Primera receta modelo encontrada y clickeable. Haciendo clic...")
+        primera_receta_modelo_clickable.click()
+        print("Dentro del iframe: Clic en la primera receta modelo realizado.")
+        time.sleep(1.5)
+    except Exception as e_iframe_content:
+        print(f"Error al interactuar con el contenido del iframe: {e_iframe_content}")
+    finally:
+        print("Volviendo al contenido principal de la página...")
+        driver.switch_to.default_content()
+        print("Contexto cambiado de vuelta al contenido principal.")
+
+    print("Proceso en iframe completado. Esperando que la página principal se actualice...")
+    time.sleep(1.5)
+
+    id_checkbox_marca = "chk_marca_comercial_1"
+    print(f"Esperando el checkbox 'Marca comercial' (id='{id_checkbox_marca}')...")
+    checkbox_marca_comercial = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.ID, id_checkbox_marca))
+    )
+    print("Checkbox 'Marca comercial' encontrado. Haciendo clic para tildarlo...")
+    checkbox_marca_comercial.click()
+    print("Checkbox 'Marca comercial' clickeado.")
+    print("Esperando 2 segundos para observar el checkbox...")
+    time.sleep(2)
+    print("Interacción con el checkbox 'Marca comercial' completada.")
+
+    id_dropdown_duracion = "c_duracion"
+    texto_opcion_deseada = "Tres Meses"
+    print(f"Esperando la lista desplegable de duración (id='{id_dropdown_duracion}')...")
+    dropdown_duracion_element = WebDriverWait(driver, 20).until(
+        EC.presence_of_element_located((By.ID, id_dropdown_duracion))
+    )
+    print("Lista desplegable de duración encontrada.")
+    select_duracion = Select(dropdown_duracion_element)
+    print(f"Seleccionando la opción '{texto_opcion_deseada}' por su texto visible...")
+    select_duracion.select_by_visible_text(texto_opcion_deseada)
+    print(f"Opción '{texto_opcion_deseada}' seleccionada para la duración.")
+    print("Esperando 3 segundos para observar la duración seleccionada...")
+    time.sleep(1.5)
+    print("Interacción con la duración completada.")
+
+    id_boton_generar = "btnGuardar"
+    print(f"Esperando el botón 'GENERAR RECETA' (id='{id_boton_generar}')...")
+    boton_generar_receta = WebDriverWait(driver, 20).until(
+        EC.element_to_be_clickable((By.ID, id_boton_generar))
+    )
+    print("Botón 'GENERAR RECETA' encontrado y clickeable. Haciendo clic...")
+    boton_generar_receta.click()
+    print("Botón 'GENERAR RECETA' clickeado.")
+
+    # --- HACER CLIC EN EL BOTÓN "CONTINUAR" DEL POP-UP DE ÉXITO ---
+    # XPath para el botón CONTINUAR basado en el span interno con el texto.
+    xpath_boton_continuar = "//button[.//span[@class='ui-button-text' and normalize-space(text())='CONTINUAR']]"
+    print(f"Esperando el pop-up de éxito y el botón 'CONTINUAR' (XPath: {xpath_boton_continuar})...")
+    
+    boton_continuar_popup = WebDriverWait(driver, 20).until( # Aumentamos un poco la espera por si el pop-up tarda en aparecer
+        EC.element_to_be_clickable((By.XPATH, xpath_boton_continuar))
+    )
+    print("Botón 'CONTINUAR' del pop-up encontrado y clickeable. Haciendo clic...")
+    boton_continuar_popup.click()
+    print("Botón 'CONTINUAR' del pop-up clickeado.")
+
+    # Pausa para observar el resultado después de hacer clic en "CONTINUAR"
+    print("Esperando 10 segundos para observar qué sucede después de 'CONTINUAR'...")
+    time.sleep(10)
+
+    print("Proceso de receta completado (o intento).")
+
+except Exception as e:
+    print(f"Ocurrió un error general: {e}")
+    import traceback
+    traceback.print_exc()
+finally:
+    print("Script finalizado. El navegador permanecerá abierto si driver.quit() está comentado.")
+    # if 'driver' in locals() and driver is not None:
+    #     driver.quit()
+    pass
